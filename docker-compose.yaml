@@ -1,0 +1,23 @@
+version: '2.2'
+services:
+  proxy:
+    container_name: proxy
+    image: proxy:latest
+    restart: always
+    networks:
+      - proxy-net
+    ports:
+      - '8809:80'
+    environment:
+      - RUN_ENV=DOCKER
+    volumes:
+      - ./config.yaml:/home/proxy-pool/config.yaml
+      - ./logs:/home/proxy-pool/logs
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+
+networks:
+  proxy-net:
+    external: false
