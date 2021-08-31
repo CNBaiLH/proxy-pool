@@ -42,9 +42,9 @@ func (i *_IPProxy3366) CrawlData() {
 	var pageCount int64 = 1
 	var crawldata func(u string)
 	crawldata = func(u string) {
+		defer wg.Done()
 		pageCount = atomic.LoadInt64(&pageCount)
 		if i.maxPage > 0 && pageCount > i.maxPage {
-			wg.Done()
 			utils.Logger().Infof("IPProxy3366 CrawlData Reaches the maximum number of pages: [%v]", pageCount)
 			return
 		}
@@ -52,18 +52,15 @@ func (i *_IPProxy3366) CrawlData() {
 
 		var dom *goquery.Document
 		if dom = getDOMByURL(u); dom == nil {
-			wg.Done()
 			utils.Logger().Debugf("IPProxy3366 DrawlData dom is empty,url:[%v]", u)
 			return
 		}
 		tbody := dom.Find("div.container").Find("table").Find("tbody")
 		if tbody == nil {
-			wg.Done()
 			return
 		}
 		trs := tbody.Find("tr")
 		if trs.Length() == 0 {
-			wg.Done()
 			return
 		}
 		i.Paraser(dom, nil)
@@ -72,7 +69,6 @@ func (i *_IPProxy3366) CrawlData() {
 			wg.Add(1)
 			go crawldata("https://proxy.ip3366.net/free/" + attr)
 		}
-		wg.Done()
 	}
 	wg.Add(1)
 	go crawldata("https://proxy.ip3366.net/free")

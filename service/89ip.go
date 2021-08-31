@@ -46,9 +46,9 @@ func (i *_IP89) CrawlData() {
 	var pageCount int64 = 1
 	wg := &sync.WaitGroup{}
 	crawldata = func(u string, isFirst bool) {
+		defer wg.Done()
 		pageCount = atomic.LoadInt64(&pageCount)
 		if i.maxPage > 0 && pageCount > i.maxPage {
-			wg.Done()
 			utils.Logger().Infof("IP89 CrawlData Reaches the maximum number of pages: [%v]", pageCount)
 			return
 		}
@@ -57,18 +57,15 @@ func (i *_IP89) CrawlData() {
 		var dom *goquery.Document
 		if dom = getDOMByURL(u); dom == nil {
 			utils.Logger().Debugf("IP89 CrawlData getDOMByURL url:[%v] dom is empty", u)
-			wg.Done()
 			return
 		}
 		nextPage := dom.Find("a.layui-laypage-next")
 		tbody := dom.Find(".layui-table").Find("tbody")
 		if tbody == nil {
-			wg.Done()
 			return
 		}
 		trs := tbody.Find("tr")
 		if trs.Length() == 0 {
-			wg.Done()
 			return
 		}
 		if nextPage != nil {
@@ -77,7 +74,6 @@ func (i *_IP89) CrawlData() {
 			go crawldata("https://www.89ip.cn/"+href, false)
 		}
 		i.Parser(dom, nil)
-		wg.Done()
 	}
 	wg.Add(1)
 	go crawldata("https://www.89ip.cn", true)

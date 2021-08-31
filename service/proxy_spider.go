@@ -32,11 +32,12 @@ func init() {
 type spiderOption struct {
 	maxPage int64
 }
+
 func WithSpiderRequestMaxPage(maxPage int64) func(o *spiderOption) {
 	return func(o *spiderOption) {
 		if maxPage >= 1 {
 			o.maxPage = maxPage
-		}else{
+		} else {
 			o.maxPage = 6
 		}
 	}
@@ -109,13 +110,13 @@ func getDOMByURL(cURL string, opts ...func(option *RequestDOMOption)) *goquery.D
 	utils.Logger().Infof("getDOMByURL Request URL: %v", cURL)
 	rsp, err := client.Do(request)
 	if err != nil {
-		utils.Logger().Errorf("getDOMByURL error: %v", err)
+		utils.Logger().Errorf("getDOMByURL error: %v,url: %v", err, cURL)
 		return nil
 	}
 	defer rsp.Body.Close()
 	body, _ := ioutil.ReadAll(rsp.Body)
 	if rsp.StatusCode != 200 {
-		utils.Logger().Debugf("getDOMByURL response code :[%v],body :%s", rsp.StatusCode, body)
+		utils.Logger().Debugf("getDOMByURL response code :[%v],body :%s,url:[%v]", rsp.StatusCode, body, cURL)
 		return nil
 	}
 	dom, _ := goquery.NewDocumentFromReader(ioutil.NopCloser(strings.NewReader(string(body))))
@@ -165,12 +166,9 @@ func IsLive(proxyURL string) bool {
 }
 
 func constructProxy(ip string, port string, isHTTPs int, isPost int, local string, isp string, source string) model.Proxy {
-	var status int
-	//if IsLive("http://" + ip + ":" + port) {
-	//	status = 1
-	//}
+	var status int = 1 //刚入库的数据默认可用
 
-	return model.Proxy{
+	p := model.Proxy{
 		Host:         ip,
 		Port:         port,
 		Local:        local,
@@ -182,4 +180,6 @@ func constructProxy(ip string, port string, isHTTPs int, isPost int, local strin
 		Status:       status,
 		Source:       source,
 	}
+	utils.Logger().Infof("constructProxy proxy info: %+v", p)
+	return p
 }

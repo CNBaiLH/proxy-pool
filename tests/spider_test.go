@@ -11,6 +11,6 @@ import (
 )
 
 func TestIPYQie(t *testing.T) {
-	i := service.NewIP89Instance()
+	i := service.NewIPXilaInstance()
 	i.CrawlData()
 }
